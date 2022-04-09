@@ -19,12 +19,17 @@
     </Virtualize>
 
 </ul>
-<EditForm Model="chatMessage" OnValidSubmit="SendMessage">
+<EditForm Model="chatMessage"  OnValidSubmit="SendMessage">
     <DataAnnotationsValidator></DataAnnotationsValidator>
     <div class="form-group">
-        <label>Username:</label> <InputText class="form-Control" @bind-Value="chatMessage.UserName"></InputText>
-        <label>Message:</label> <InputTextArea class="form-Control" @bind-Value="chatMessage.Message"></InputTextArea>
-        <button type="submit">Send</button>
+
+
+        <div class="col-form-label">User Name</div> 
+        <InputText class="form-control" @bind-Value="chatMessage.UserName"></InputText>
+        <div class="col-form-label">Message</div> 
+        <InputTextArea class="form-control" @bind-Value="chatMessage.Message"></InputTextArea>
+       
+        <button class="btn mt-1 btn-primary" type="submit">Send</button>
 
 
     </div>

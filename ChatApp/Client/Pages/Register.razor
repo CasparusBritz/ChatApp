@@ -1,13 +1,32 @@
 ﻿@page "/register"
+@using System.ComponentModel.DataAnnotations;
 
 @inject NavigationManager NavigationManager;
 
 
 <h3>Register</h3>
 
-
+<EditForm Model="user" >
+    <div class="form-group">
+        <div class="row">
+            <div class="col-md"><div class="col-form-label">First Name</div><InputText class=form-control @bind-Value=user.FirstName></InputText></div>
+            <div class="col-md"><div class="col-form-label">Last Name</div><InputText class=form-control @bind-Value=user.LastName></InputText></div>
+        </div>
+        <div class="row"><div class="col-md"><div class="col-form-label">User Name</div> <InputText class=form-control @bind-Value=user.UserName></InputText></div></div>
+        <button class="btn mt-1 btn-primary" type="submit">Start Chat</button>
+    </div>
+</EditForm>
 
 @code {
-    
+    User user = new();
+
+    public class User
+    {
+        [Required]
+        public string UserName { get; set; }
+        [Required]
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+    }
 
 }
