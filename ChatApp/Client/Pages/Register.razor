@@ -1,7 +1,6 @@
 ﻿@page "/register"
 @using System.ComponentModel.DataAnnotations;
 
-
 @inject NavigationManager NavigationManager;
 @inject IJSRuntime JSRuntime ;
 
@@ -14,7 +13,7 @@
             <div class="col-md"><div class="col-form-label">Last Name</div><InputText class=form-control @bind-Value=user.LastName></InputText></div>
         </div>
         <div class="row"><div class="col-md"><div class="col-form-label">User Name</div> <InputText class=form-control @bind-Value=user.UserName></InputText></div></div>
-        <button class="btn mt-1 btn-primary" type="button" @onclick="Save">Start Chat</button>
+        <button class="btn mt-1 btn-primary" type="button" @onclick="OnClickStartChat">Start Chat</button>
     </div>
 </EditForm>
 
@@ -30,9 +29,12 @@
         public string LastName { get; set; }
     }
 
-    public async Task Save()
+    public async Task OnClickStartChat()
     {
         await JSRuntime.InvokeVoidAsync("localStorage.setItem", "userName", user.UserName);
+        await JSRuntime.InvokeVoidAsync("localStorage.setItem", "firstName", user.FirstName);
+        await JSRuntime.InvokeVoidAsync("localStorage.setItem", "lastName", user.LastName);
+        NavigationManager.NavigateTo("/chat");
     }
 
 }

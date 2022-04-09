@@ -4,6 +4,7 @@
 @using System.ComponentModel.DataAnnotations
 
 @inject NavigationManager NavigationManager;
+@inject IJSRuntime JSRuntime ;
 
 <h3>Chat</h3>
 
@@ -19,12 +20,10 @@
     </Virtualize>
 
 </ul>
-<EditForm Model="chatMessage"  OnValidSubmit="SendMessage">
+<EditForm Model="chatMessage" OnValidSubmit="SendMessage">
     <DataAnnotationsValidator></DataAnnotationsValidator>
     <div class="form-group">
-        <div class="col-form-label">User Name</div> 
-        <InputText class="form-control" @bind-Value="chatMessage.UserName"></InputText>
-        <div class="col-form-label">Message</div> 
+        <div class="col-form-label">Message</div>
         <InputTextArea class="form-control" @bind-Value="chatMessage.Message"></InputTextArea>
         <button class="btn mt-1 btn-primary" type="submit">Send</button>
     </div>
@@ -38,6 +37,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await SetChatUserName();
         hubConnection = new HubConnectionBuilder().WithUrl(NavigationManager.BaseUri + "hubs/ChatHub").Build();
         hubConnection.On<string, string>("SendMessage", async (message, userName) =>
          {
@@ -59,6 +59,12 @@
         public DateTime MessageDate { get; set; }
 
     }
+
+    public async Task SetChatUserName()
+    {
+        chatMessage.UserName = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userName");
+    }
+
 
     public async Task SendMessage()
     {
