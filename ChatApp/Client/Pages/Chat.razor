@@ -6,6 +6,31 @@
 @inject NavigationManager NavigationManager;
 
 <h3>Chat</h3>
+
+<ul>
+    <Virtualize Items="messages.OrderByDescending(m=>m.MessageDate).ToList()" Context="message">
+        <li>
+            @message.UserName
+            <br />
+            @message.Message
+        </li>
+
+
+    </Virtualize>
+
+</ul>
+<EditForm Model="chatMessage" OnValidSubmit="SendMessage">
+    <DataAnnotationsValidator></DataAnnotationsValidator>
+    <div class="form-group">
+        <label>Username:</label> <InputText class="form-Control" @bind-Value="chatMessage.UserName"></InputText>
+        <label>Message:</label> <InputTextArea class="form-Control" @bind-Value="chatMessage.Message"></InputTextArea>
+        <button type="submit">Send</button>
+
+
+    </div>
+
+</EditForm>
+
 @code {
     List<ChatMessage> messages = new();
     HubConnection hubConnection;
@@ -14,14 +39,14 @@
     protected override async Task OnInitializedAsync()
     {
         hubConnection = new HubConnectionBuilder().WithUrl(NavigationManager.BaseUri + "hubs/ChatHub").Build();
-        hubConnection.On("SendMessage", (message, userName) =>
-        {
-            var chatMessage = new ChatMessage { UserName = userName, Message = message, MessageDate = DateTime.Now };
-            messages.Add(chatMessage);
-            StateHasChanged();
+        hubConnection.On<string, string>("SendMessage", async (message, userName) =>
+         {
+             var chatMessage = new ChatMessage { UserName = userName, Message = message, MessageDate = DateTime.Now };
+             messages.Add(chatMessage);
+             StateHasChanged();
 
-
-        });
+         });
+        await hubConnection.StartAsync();
     }
 
 
@@ -33,6 +58,12 @@
         public string Message { get; set; }
         public DateTime MessageDate { get; set; }
 
+    }
+
+    public async Task SendMessage()
+    {
+        await hubConnection.SendAsync("SendMessage", chatMessage.UserName, chatMessage.Message);
+        chatMessage.Message = "";
     }
 
 
