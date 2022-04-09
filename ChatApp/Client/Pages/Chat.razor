@@ -22,16 +22,11 @@
 <EditForm Model="chatMessage"  OnValidSubmit="SendMessage">
     <DataAnnotationsValidator></DataAnnotationsValidator>
     <div class="form-group">
-
-
         <div class="col-form-label">User Name</div> 
         <InputText class="form-control" @bind-Value="chatMessage.UserName"></InputText>
         <div class="col-form-label">Message</div> 
         <InputTextArea class="form-control" @bind-Value="chatMessage.Message"></InputTextArea>
-       
         <button class="btn mt-1 btn-primary" type="submit">Send</button>
-
-
     </div>
 
 </EditForm>
