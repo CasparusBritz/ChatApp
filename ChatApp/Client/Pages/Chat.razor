@@ -1,0 +1,39 @@
+﻿@page "/chat"
+
+@using Microsoft.AspNetCore.SignalR.Client;
+@using System.ComponentModel.DataAnnotations
+
+@inject NavigationManager NavigationManager;
+
+<h3>Chat</h3>
+@code {
+    List<ChatMessage> messages = new();
+    HubConnection hubConnection;
+    ChatMessage chatMessage = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder().WithUrl(NavigationManager.BaseUri + "hubs/ChatHub").Build();
+        hubConnection.On("SendMessage", (message, userName) =>
+        {
+            var chatMessage = new ChatMessage { UserName = userName, Message = message, MessageDate = DateTime.Now };
+            messages.Add(chatMessage);
+            StateHasChanged();
+
+
+        });
+    }
+
+
+    public class ChatMessage
+    {
+        [Required]
+        public string UserName { get; set; }
+        [Required]
+        public string Message { get; set; }
+        public DateTime MessageDate { get; set; }
+
+    }
+
+
+}
