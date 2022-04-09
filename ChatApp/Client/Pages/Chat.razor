@@ -7,19 +7,26 @@
 @inject IJSRuntime JSRuntime ;
 
 <h3>Chat</h3>
+<div class="container">
 
-<ul>
-    <Virtualize Items="messages.OrderByDescending(m=>m.MessageDate).ToList()" Context="message">
-        <li>
-            @message.UserName
-            <br />
-            @message.Message
+</div>
+<ul class="chat-window">
+    <Virtualize Items="messages.OrderBy(m=>m.MessageDate).ToList()" Context="message">
+        <li class=" @(message.UserName == chatMessage.UserName ? "user-message" : "broadcast-message")">
+            <div class="chat-message">
+                @message.Message
+            </div>
+            <div class="chat-meta">
+             @message.MessageDate -  @message.UserName
+
+            </div>
         </li>
 
 
     </Virtualize>
 
 </ul>
+
 <EditForm Model="chatMessage" OnValidSubmit="SendMessage">
     <DataAnnotationsValidator></DataAnnotationsValidator>
     <div class="form-group">

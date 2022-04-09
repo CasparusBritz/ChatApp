@@ -62,3 +62,32 @@ a, .btn-link {
     .blazor-error-boundary::after {
         content: "An error has occurred."
     }
+
+/*CUSTOM*/
+ul.chat-window {
+    list-style: none;
+    flex: auto;
+    padding:0;
+}
+
+    ul.chat-window li.broadcast-message {
+        justify-content: start;
+        background-color: #00ff90;
+        border-radius: 5px;
+        color: #3e3d3d;
+        padding: 1rem;
+        margin: 0.5rem;
+    }
+
+    ul.chat-window li.user-message {
+        justify-content: end;
+        background-color: #146E8F;
+        border-radius: 5px;
+        color: white;
+        padding: 1rem;
+        margin: 0.5rem;
+    }
+
+.chat-meta {
+    font-size: x-small;
+}
