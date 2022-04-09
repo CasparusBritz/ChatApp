@@ -1,5 +1,6 @@
 ﻿@page "/register"
 @using System.ComponentModel.DataAnnotations;
+@using Microsoft.AspNetCore.SignalR.Client
 
 @inject NavigationManager NavigationManager;
 @inject IJSRuntime JSRuntime ;
@@ -7,13 +8,26 @@
 <h3>Register</h3>
 
 <EditForm Model="user" OnValidSubmit="OnClickStartChat">
+    <DataAnnotationsValidator></DataAnnotationsValidator>
     <div class="form-group">
         <div class="row">
-            <div class="col-md"><div class="col-form-label">First Name</div><InputText class=form-control @bind-Value=user.FirstName></InputText></div>
-            <div class="col-md"><div class="col-form-label">Last Name</div><InputText class=form-control @bind-Value=user.LastName></InputText></div>
+            <div class="col-md">
+                <div class="col-form-label">First Name</div>
+                <InputText class=form-control @bind-Value=user.FirstName></InputText>
+            </div>
+            <div class="col-md">
+                <div class="col-form-label">Last Name</div>
+                <InputText class=form-control @bind-Value=user.LastName></InputText>
+            </div>
         </div>
         <div class="row"><div class="col-md"><div class="col-form-label">User Name</div> <InputText class=form-control @bind-Value=user.UserName></InputText></div></div>
-        <button class="btn mt-1 btn-primary" type="submit" >Start Chat</button>
+        <br />
+
+        <ValidationSummary>
+        </ValidationSummary>
+
+
+        <button class="btn mt-1 btn-primary" type="submit">Start Chat</button>
     </div>
 </EditForm>
 
@@ -22,9 +36,10 @@
 
     public class User
     {
-        [Required]
+        [Required(ErrorMessage = "Please fill out a User Name to display in the chat.")]
+
         public string UserName { get; set; }
-        [Required]
+        [Required(ErrorMessage = "Please fill in your first name (or an alias).")]
         public string FirstName { get; set; }
         public string LastName { get; set; }
     }
@@ -34,6 +49,9 @@
         await JSRuntime.InvokeVoidAsync("localStorage.setItem", "userName", user.UserName);
         await JSRuntime.InvokeVoidAsync("localStorage.setItem", "firstName", user.FirstName);
         await JSRuntime.InvokeVoidAsync("localStorage.setItem", "lastName", user.LastName);
+        var hubConnection = new HubConnectionBuilder().WithUrl(NavigationManager.BaseUri + "hubs/ChatHub").Build();
+        await hubConnection.StartAsync();
+        await hubConnection.SendAsync("SendUsername", user.UserName);
         NavigationManager.NavigateTo("/chat");
     }
 

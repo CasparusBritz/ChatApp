@@ -34,6 +34,12 @@ a, .btn-link {
     color: red;
 }
 
+.validation-errors {
+    background-color: pink;
+    border: red solid thin;
+    border-radius: 5px;
+}
+
 #blazor-error-ui {
     background: lightyellow;
     bottom: 0;
@@ -67,7 +73,7 @@ a, .btn-link {
 ul.chat-window {
     list-style: none;
     flex: auto;
-    padding:0;
+    padding: 0;
 }
 
     ul.chat-window li.broadcast-message {

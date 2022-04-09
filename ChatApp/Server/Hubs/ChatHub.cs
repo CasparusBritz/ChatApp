@@ -9,5 +9,10 @@ namespace ChatApp.Server.Hubs
            await Clients.All.SendAsync("SendMessage", userName, message);
         }
 
+        public async Task SendUsername(string userName)
+        {
+            await Clients.All.SendAsync("SendUsername", userName);
+        }
+
     }
 }

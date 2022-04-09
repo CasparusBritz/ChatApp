@@ -7,9 +7,7 @@
 @inject IJSRuntime JSRuntime ;
 
 <h3>Chat</h3>
-<div class="container">
 
-</div>
 <ul class="chat-window">
     <Virtualize Items="messages.OrderBy(m=>m.MessageDate).ToList()" Context="message">
         <li class=" @(message.UserName == chatMessage.UserName ? "user-message" : "broadcast-message")">
@@ -17,14 +15,16 @@
                 @message.Message
             </div>
             <div class="chat-meta">
-             @message.MessageDate -  @message.UserName
+                @message.MessageDate -  @message.UserName
 
             </div>
         </li>
-
-
     </Virtualize>
-
+    <Virtualize Items="usernames" Context="user">
+        <li class="user-added">
+            @user Entered Chat
+        </li>
+    </Virtualize>
 </ul>
 
 <EditForm Model="chatMessage" OnValidSubmit="SendMessage">
@@ -32,6 +32,7 @@
     <div class="form-group">
         <div class="col-form-label">Message</div>
         <InputTextArea class="form-control" @bind-Value="chatMessage.Message"></InputTextArea>
+        <ValidationSummary></ValidationSummary>
         <button class="btn mt-1 btn-primary" type="submit">Send</button>
     </div>
 
@@ -39,6 +40,7 @@
 
 @code {
     List<ChatMessage> messages = new();
+    List<string> usernames = new();
     HubConnection hubConnection;
     ChatMessage chatMessage = new();
 
@@ -53,6 +55,13 @@
              StateHasChanged();
 
          });
+
+
+        hubConnection.On<string>("SendUsername", async (userName) =>
+        {
+            usernames.Add(userName);
+            StateHasChanged();
+        });
         await hubConnection.StartAsync();
     }
 
@@ -61,7 +70,7 @@
     {
         [Required]
         public string UserName { get; set; }
-        [Required]
+        [Required(ErrorMessage = "Message is required")]
         public string Message { get; set; }
         public DateTime MessageDate { get; set; }
 
