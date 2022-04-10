@@ -1,5 +1,6 @@
 ﻿@page "/register"
 @using System.ComponentModel.DataAnnotations;
+@using ChatApp.Shared
 @using Microsoft.AspNetCore.SignalR.Client
 
 @inject NavigationManager NavigationManager;
@@ -34,16 +35,6 @@
 @code {
     User user = new();
 
-    public class User
-    {
-        [Required(ErrorMessage = "Please fill out a User Name to display in the chat.")]
-
-        public string UserName { get; set; }
-        [Required(ErrorMessage = "Please fill in your first name (or an alias).")]
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-    }
-
     public async Task OnClickStartChat()
     {
         await JSRuntime.InvokeVoidAsync("localStorage.setItem", "userName", user.UserName);
@@ -51,7 +42,7 @@
         await JSRuntime.InvokeVoidAsync("localStorage.setItem", "lastName", user.LastName);
         var hubConnection = new HubConnectionBuilder().WithUrl(NavigationManager.BaseUri + "hubs/ChatHub").Build();
         await hubConnection.StartAsync();
-        await hubConnection.SendAsync("SendUsername", user.UserName);
+        await hubConnection.SendAsync("SendUsername", user.UserName, hubConnection.ConnectionId);
         NavigationManager.NavigateTo("/chat");
     }
 

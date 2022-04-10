@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using ChatApp.Shared;
+using Microsoft.AspNetCore.SignalR;
 
 namespace ChatApp.Server.Hubs
 {
@@ -6,13 +7,27 @@ namespace ChatApp.Server.Hubs
     {
         public async Task SendMessage(string message, string userName)
         {
-           await Clients.All.SendAsync("SendMessage", userName, message);
+            await Clients.All.SendAsync("SendMessage", userName, message);
         }
 
-        public async Task SendUsername(string userName)
+        public async Task SendUsername(string userName, string connectionID)
         {
-            await Clients.All.SendAsync("SendUsername", userName);
+            User.UserConnections.Add(connectionID, userName);
+            await Clients.All.SendAsync("SendUsername", userName, connectionID);
         }
+
+        public override async Task OnConnectedAsync()
+        {
+            
+            await base.OnConnectedAsync();
+        }
+
+        public override async Task OnDisconnectedAsync(Exception exception)
+        {
+            User.UserConnections.Remove(Context.ConnectionId);
+            await base.OnDisconnectedAsync(exception);
+        }
+
 
     }
 }

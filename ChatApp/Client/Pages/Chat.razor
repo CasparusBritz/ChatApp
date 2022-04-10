@@ -1,5 +1,6 @@
 ﻿@page "/chat"
 
+@using ChatApp.Shared
 @using Microsoft.AspNetCore.SignalR.Client;
 @using System.ComponentModel.DataAnnotations
 
@@ -20,9 +21,9 @@
             </div>
         </li>
     </Virtualize>
-    <Virtualize Items="usernames" Context="user">
+    <Virtualize Items="User.UserConnections" Context="user">
         <li class="user-added">
-            @user Entered Chat
+            @user.Value
         </li>
     </Virtualize>
 </ul>
@@ -40,7 +41,6 @@
 
 @code {
     List<ChatMessage> messages = new();
-    List<string> usernames = new();
     HubConnection hubConnection;
     ChatMessage chatMessage = new();
 
@@ -57,36 +57,21 @@
          });
 
 
-        hubConnection.On<string>("SendUsername", async (userName) =>
-        {
-            usernames.Add(userName);
-            StateHasChanged();
-        });
+        hubConnection.On<string, string>("SendUsername", async (userName, connectionID) =>
+         {
+
+             StateHasChanged();
+         });
         await hubConnection.StartAsync();
-    }
-
-
-    public class ChatMessage
-    {
-        [Required]
-        public string UserName { get; set; }
-        [Required(ErrorMessage = "Message is required")]
-        public string Message { get; set; }
-        public DateTime MessageDate { get; set; }
-
     }
 
     public async Task SetChatUserName()
     {
         chatMessage.UserName = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userName");
     }
-
-
     public async Task SendMessage()
     {
         await hubConnection.SendAsync("SendMessage", chatMessage.UserName, chatMessage.Message);
         chatMessage.Message = "";
     }
-
-
 }
