@@ -94,6 +94,16 @@ ul.chat-window {
         margin: 0.5rem;
     }
 
+    ul.chat-window li.chat-user {
+        justify-content: start;
+        background-color: grey;
+        border-radius: 5px;
+        color: #3e3d3d;
+        padding: 1rem;
+        margin: 0.5rem;
+    }
+
 .chat-meta {
     font-size: x-small;
 }
+

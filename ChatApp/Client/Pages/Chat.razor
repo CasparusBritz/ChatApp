@@ -21,11 +21,13 @@
             </div>
         </li>
     </Virtualize>
-    <Virtualize Items="User.UserConnections" Context="user">
-        <li class="user-added">
-            @user.Value
+    <Virtualize Items="usernames" Context="user">
+        <li class="chat-user">
+            @user
         </li>
     </Virtualize>
+
+
 </ul>
 
 <EditForm Model="chatMessage" OnValidSubmit="SendMessage">
@@ -41,6 +43,7 @@
 
 @code {
     List<ChatMessage> messages = new();
+    List<string> usernames = new();
     HubConnection hubConnection;
     ChatMessage chatMessage = new();
 
@@ -55,19 +58,20 @@
              StateHasChanged();
 
          });
+        hubConnection.On<string>("RefreshConnections", async (username) =>
+        {
+            usernames.Add(username);
+            StateHasChanged();
+        });
 
-
-        hubConnection.On<string, string>("SendUsername", async (userName, connectionID) =>
-         {
-
-             StateHasChanged();
-         });
         await hubConnection.StartAsync();
     }
 
     public async Task SetChatUserName()
     {
         chatMessage.UserName = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userName");
+
+
     }
     public async Task SendMessage()
     {

@@ -12,22 +12,30 @@ namespace ChatApp.Server.Hubs
 
         public async Task SendUsername(string userName, string connectionID)
         {
-            User.UserConnections.Add(connectionID, userName);
-            await Clients.All.SendAsync("SendUsername", userName, connectionID);
+            foreach (var userConn in ConnectedUsers.UserConnections)
+            {
+                if (userConn.Key == connectionID)
+                {
+                    userConn.Value.UserName = userName;
+                }
+            }
+
+            await Clients.All.SendAsync("RefreshConnections",userName);
         }
 
         public override async Task OnConnectedAsync()
         {
-            
             await base.OnConnectedAsync();
+
+            ConnectedUsers.UserConnections.Add(Context.ConnectionId, new());
         }
 
-        public override async Task OnDisconnectedAsync(Exception exception)
+        public override async Task OnDisconnectedAsync(Exception e)
         {
-            User.UserConnections.Remove(Context.ConnectionId);
-            await base.OnDisconnectedAsync(exception);
+            await base.OnDisconnectedAsync(e);
+            ConnectedUsers.UserConnections.Remove(Context.ConnectionId);
         }
-
+      
 
     }
 }
