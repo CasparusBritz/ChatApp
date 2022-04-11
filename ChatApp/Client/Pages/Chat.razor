@@ -3,15 +3,21 @@
 @using ChatApp.Shared
 @using Microsoft.AspNetCore.SignalR.Client;
 @using System.ComponentModel.DataAnnotations
+@using System.Collections.Concurrent
 
 @inject NavigationManager NavigationManager;
 @inject IJSRuntime JSRuntime ;
 
+<h3>Online Users</h3>
+<ul class="online-users">
+    <Virtualize Items="usernames" Context="user">
+        <li> @user</li>
+    </Virtualize>
+</ul>
 <h3>Chat</h3>
-
 <ul class="chat-window">
     <Virtualize Items="messages.OrderBy(m=>m.MessageDate).ToList()" Context="message">
-        <li class=" @(message.UserName == chatMessage.UserName ? "user-message" : "broadcast-message")">
+        <li class=" @(message.UserName == chatMessage.UserName ? "user-message" : @message.UserName == "ADMIN"? "chat-user" :"broadcast-message")">
             <div class="chat-message">
                 @message.Message
             </div>
@@ -21,20 +27,14 @@
             </div>
         </li>
     </Virtualize>
-    <Virtualize Items="usernames" Context="user">
-        <li class="chat-user">
-            @user
-        </li>
-    </Virtualize>
-
-
 </ul>
+
 
 <EditForm Model="chatMessage" OnValidSubmit="SendMessage">
     <DataAnnotationsValidator></DataAnnotationsValidator>
     <div class="form-group">
         <div class="col-form-label">Message</div>
-        <InputTextArea class="form-control" @bind-Value="chatMessage.Message"></InputTextArea>
+        <InputText class="form-control" @bind-Value="chatMessage.Message" ></InputText>
         <ValidationSummary></ValidationSummary>
         <button class="btn mt-1 btn-primary" type="submit">Send</button>
     </div>
@@ -58,9 +58,27 @@
              StateHasChanged();
 
          });
-        hubConnection.On<string>("RefreshConnections", async (username) =>
+        hubConnection.On<List<string>>("RefreshUserNames", async (loggedOnUsers) =>
         {
-            usernames.Add(username);
+            if (loggedOnUsers.Count  > usernames.Count)
+            {
+                var newbie = loggedOnUsers.Where(x => !usernames.Contains(x)).FirstOrDefault();
+                ChatMessage c = new ChatMessage {MessageDate=DateTime.Now};
+                c.UserName = "ADMIN";
+                c.Message = ($"User {newbie} has joined");
+                messages.Add(c);
+            }
+
+            if (loggedOnUsers.Count < usernames.Count)
+            {
+                var quitter = usernames.Where(x => !loggedOnUsers.Contains(x)).FirstOrDefault();
+                ChatMessage c = new ChatMessage {MessageDate=DateTime.Now};
+                c.UserName = "ADMIN";
+                c.Message = ($"User {quitter} has left.");
+                messages.Add(c);
+            }
+            usernames.Clear();
+            usernames.AddRange(loggedOnUsers);
             StateHasChanged();
         });
 
@@ -70,9 +88,8 @@
     public async Task SetChatUserName()
     {
         chatMessage.UserName = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userName");
-
-
     }
+
     public async Task SendMessage()
     {
         await hubConnection.SendAsync("SendMessage", chatMessage.UserName, chatMessage.Message);

@@ -78,11 +78,12 @@ ul.chat-window {
 
     ul.chat-window li.broadcast-message {
         justify-content: start;
-        background-color: #00ff90;
+        background-color: #3d9b50;
         border-radius: 5px;
-        color: #3e3d3d;
+        color: rgb(0, 0, 0);
         padding: 1rem;
         margin: 0.5rem;
+        margin-right: 4rem;
     }
 
     ul.chat-window li.user-message {
@@ -92,18 +93,28 @@ ul.chat-window {
         color: white;
         padding: 1rem;
         margin: 0.5rem;
+        margin-left:4rem;
     }
 
     ul.chat-window li.chat-user {
         justify-content: start;
-        background-color: grey;
+        background-color: #3e3d3d;
         border-radius: 5px;
-        color: #3e3d3d;
+        color: white;
         padding: 1rem;
         margin: 0.5rem;
+
     }
 
 .chat-meta {
     font-size: x-small;
 }
 
+ul.online-users {
+    padding: 0.5rem;
+    list-style: none;
+    border: thin solid #cbcbcb;
+    border-radius: 5px;
+    background-color: #f5f5f5;
+    
+}
