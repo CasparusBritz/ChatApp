@@ -43,17 +43,14 @@
     </Virtualize>
 </ul>
 
-
 <EditForm Model="chatMessage" OnValidSubmit="SendMessage">
     <DataAnnotationsValidator></DataAnnotationsValidator>
     <div class="form-group">
         <div class="col-form-label">Message</div>
-        <div class="row">
-            <div class="col-11">
-                <InputText class="form-control" @bind-Value="chatMessage.Message"></InputText>
-            </div>
-            <div class="col-1">
-                <span class="form-control-clear form-control-feedback @showHideCSS" @onclick="ClearMessageBox">X</span>
+        <div class="input-group">
+            <InputText class="form-control" @bind-Value="chatMessage.Message"></InputText>
+            <div class="input-group-append">
+                <button type="reset" class="btn btn-close btn-outline-secondary " ></button>
             </div>
         </div>
     </div>
@@ -77,16 +74,12 @@
         else
         {
             showHideCSS = "";
-
         }
-
-
-
     }
+
     void ClearMessageBox()
     {
         chatMessage.Message = "";
-
     }
 
     protected override async Task OnInitializedAsync()
