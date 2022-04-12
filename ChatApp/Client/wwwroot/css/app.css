@@ -93,7 +93,7 @@ ul.chat-window {
         color: white;
         padding: 1rem;
         margin: 0.5rem;
-        margin-left:4rem;
+        margin-left: 4rem;
     }
 
     ul.chat-window li.chat-user {
@@ -103,7 +103,6 @@ ul.chat-window {
         color: white;
         padding: 1rem;
         margin: 0.5rem;
-
     }
 
 .chat-meta {
@@ -116,5 +115,8 @@ ul.online-users {
     border: thin solid #cbcbcb;
     border-radius: 5px;
     background-color: #f5f5f5;
-    
+}
+
+.hide-control {
+    display: none;
 }

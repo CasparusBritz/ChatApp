@@ -12,7 +12,7 @@ namespace ChatApp.Server.Hubs
         {
             ChatMessage chatMessage = new ChatMessage { Message = message, UserName = userName, MessageDate = messageDate };
             messageHistory.Add(chatMessage);
-            await Clients.All.SendAsync("SendMessage", userName, message, messageDate);
+            await Clients.All.SendAsync("SendMessage", message, userName, messageDate);
         }
 
         public async Task SendHistory(string connectionID)

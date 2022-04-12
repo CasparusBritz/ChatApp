@@ -48,10 +48,17 @@
     <DataAnnotationsValidator></DataAnnotationsValidator>
     <div class="form-group">
         <div class="col-form-label">Message</div>
-        <InputText class="form-control" @bind-Value="chatMessage.Message"></InputText>
-        <ValidationSummary></ValidationSummary>
-        <button class="btn mt-1 btn-primary" type="submit">Send</button>
+        <div class="row">
+            <div class="col-11">
+                <InputText class="form-control" @bind-Value="chatMessage.Message"></InputText>
+            </div>
+            <div class="col-1">
+                <span class="form-control-clear form-control-feedback @showHideCSS" @onclick="ClearMessageBox">X</span>
+            </div>
+        </div>
     </div>
+    <ValidationSummary></ValidationSummary>
+    <button class="btn mt-1 btn-primary" type="submit">Send</button>
 </EditForm>
 
 @code {
@@ -60,11 +67,32 @@
     List<string> usernames = new();
     HubConnection hubConnection;
     ChatMessage chatMessage = new();
+    public string showHideCSS;
+    void ShowHideClearButton()
+    {
+        if (chatMessage.Message == "")
+        {
+            showHideCSS = "hide-control";
+        }
+        else
+        {
+            showHideCSS = "";
+
+        }
+
+
+
+    }
+    void ClearMessageBox()
+    {
+        chatMessage.Message = "";
+
+    }
 
     protected override async Task OnInitializedAsync()
     {
         await SetChatUserName();
-        hubConnection = new HubConnectionBuilder().WithUrl(NavigationManager.BaseUri + "hubs/ChatHub").Build();
+        hubConnection = new HubConnectionBuilder().WithUrl(NavigationManager.BaseUri + "hubs/ChatHub").WithAutomaticReconnect().Build();
         hubConnection.On<string, string, DateTime>("SendMessage", async (message, userName, messageDate) =>
           {
               var newMessage = new ChatMessage { UserName = userName, Message = message, MessageDate = messageDate };
@@ -111,7 +139,7 @@
     public async Task SendMessage()
     {
         chatMessage.MessageDate = DateTime.Now;
-        await hubConnection.SendAsync("SendMessage", chatMessage.UserName, chatMessage.Message, chatMessage.MessageDate);
+        await hubConnection.SendAsync("SendMessage", chatMessage.Message, chatMessage.UserName, chatMessage.MessageDate);
         chatMessage.Message = "";
     }
 }
