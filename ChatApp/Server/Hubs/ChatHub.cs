@@ -7,10 +7,18 @@ namespace ChatApp.Server.Hubs
     public class ChatHub : Hub
     {
         static ConcurrentDictionary<string, User> connectedUsers = new ConcurrentDictionary<string, User>();
-        public async Task SendMessage(string message, string userName)
+        static ConcurrentBag<ChatMessage> messageHistory = new ConcurrentBag<ChatMessage>();
+        public async Task SendMessage(string message, string userName, DateTime messageDate)
         {
+            ChatMessage chatMessage = new ChatMessage { Message = message, UserName = userName, MessageDate = messageDate };
+            messageHistory.Add(chatMessage);
+            await Clients.All.SendAsync("SendMessage", userName, message, messageDate);
+        }
 
-            await Clients.All.SendAsync("SendMessage", userName, message);
+        public async Task SendHistory(string connectionID)
+        {
+            await Clients.Client(connectionID).SendAsync("SendHistory", messageHistory.ToList());
+
         }
 
         public async Task SendUsername(string userName, string connectionID)
@@ -21,20 +29,21 @@ namespace ChatApp.Server.Hubs
                 connectedUsers.TryAdd(Context.ConnectionId, new User { UserName = userName });
             }
 
-            
-            await Clients.All.SendAsync("RefreshUserNames", connectedUsers.Values.Select(x=>x.UserName));
+
+            await Clients.All.SendAsync("RefreshUserNames", connectedUsers.Values.Select(x => x.UserName));
         }
 
         public override async Task OnConnectedAsync()
         {
-
             await Clients.All.SendAsync("RefreshUserNames", connectedUsers.Values.Select(x => x.UserName));
+
+            await Clients.Client(Context.ConnectionId).SendAsync("SendHistory", messageHistory.ToList());
+
             await base.OnConnectedAsync();
         }
 
         public override async Task OnDisconnectedAsync(Exception e)
         {
-
             connectedUsers.TryRemove(Context.ConnectionId, out _);
 
             await Clients.All.SendAsync("RefreshUserNames", connectedUsers.Values.Select(x => x.UserName));

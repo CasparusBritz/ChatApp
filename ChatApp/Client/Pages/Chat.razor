@@ -14,6 +14,20 @@
         <li> @user</li>
     </Virtualize>
 </ul>
+<h3>Chat History</h3>
+<ul class="chat-window">
+    <Virtualize Items="messageHistory.OrderBy(m=>m.MessageDate).ToList()" Context="message">
+        <li class="broadcast-message">
+            <div class="chat-message">
+                @message.Message
+
+            </div>
+            <div class="chat-meta">
+                @message.MessageDate -  @message.UserName
+            </div>
+        </li>
+    </Virtualize>
+</ul>
 <h3>Chat</h3>
 <ul class="chat-window">
     <Virtualize Items="messages.OrderBy(m=>m.MessageDate).ToList()" Context="message">
@@ -34,15 +48,15 @@
     <DataAnnotationsValidator></DataAnnotationsValidator>
     <div class="form-group">
         <div class="col-form-label">Message</div>
-        <InputText class="form-control" @bind-Value="chatMessage.Message" ></InputText>
+        <InputText class="form-control" @bind-Value="chatMessage.Message"></InputText>
         <ValidationSummary></ValidationSummary>
         <button class="btn mt-1 btn-primary" type="submit">Send</button>
     </div>
-
 </EditForm>
 
 @code {
     List<ChatMessage> messages = new();
+    List<ChatMessage> messageHistory = new();
     List<string> usernames = new();
     HubConnection hubConnection;
     ChatMessage chatMessage = new();
@@ -51,19 +65,24 @@
     {
         await SetChatUserName();
         hubConnection = new HubConnectionBuilder().WithUrl(NavigationManager.BaseUri + "hubs/ChatHub").Build();
-        hubConnection.On<string, string>("SendMessage", async (message, userName) =>
-         {
-             var chatMessage = new ChatMessage { UserName = userName, Message = message, MessageDate = DateTime.Now };
-             messages.Add(chatMessage);
-             StateHasChanged();
+        hubConnection.On<string, string, DateTime>("SendMessage", async (message, userName, messageDate) =>
+          {
+              var newMessage = new ChatMessage { UserName = userName, Message = message, MessageDate = messageDate };
+              messages.Add(newMessage);
+              StateHasChanged();
 
-         });
+          });
+        hubConnection.On<List<ChatMessage>>("SendHistory", async (oldMessages) =>
+        {
+            messageHistory.AddRange(oldMessages);
+            StateHasChanged();
+        });
         hubConnection.On<List<string>>("RefreshUserNames", async (loggedOnUsers) =>
         {
-            if (loggedOnUsers.Count  > usernames.Count)
+            ChatMessage c = new ChatMessage { MessageDate = DateTime.Now };
+            if (loggedOnUsers.Count > usernames.Count)
             {
                 var newbie = loggedOnUsers.Where(x => !usernames.Contains(x)).FirstOrDefault();
-                ChatMessage c = new ChatMessage {MessageDate=DateTime.Now};
                 c.UserName = "ADMIN";
                 c.Message = ($"User {newbie} has joined");
                 messages.Add(c);
@@ -72,7 +91,6 @@
             if (loggedOnUsers.Count < usernames.Count)
             {
                 var quitter = usernames.Where(x => !loggedOnUsers.Contains(x)).FirstOrDefault();
-                ChatMessage c = new ChatMessage {MessageDate=DateTime.Now};
                 c.UserName = "ADMIN";
                 c.Message = ($"User {quitter} has left.");
                 messages.Add(c);
@@ -92,7 +110,8 @@
 
     public async Task SendMessage()
     {
-        await hubConnection.SendAsync("SendMessage", chatMessage.UserName, chatMessage.Message);
+        chatMessage.MessageDate = DateTime.Now;
+        await hubConnection.SendAsync("SendMessage", chatMessage.UserName, chatMessage.Message, chatMessage.MessageDate);
         chatMessage.Message = "";
     }
 }
